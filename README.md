@@ -131,10 +131,10 @@ The DNC in this code should seamlessly plug into your Chainer projects. Simply i
 from lib import DNC
 
 class MyModel(chainer.Chain):
-    def __init__(self, input_dim=35, hidden_dim=256, output_dim=32, K=8, gpu=-1):
+    def __init__(self, input_dim=35, hidden_dim=256, output_dim=32):
         super(MyModel, self).__init__(
-                             # X, Y, N, W, R, lstm_hidden_dim, K, gpu
-            lstm_layer = DNC(input_dim, output_dim, 256, 64, 4, hidden_dim, K, gpu)
+                             # X, Y, N, W, R, lstm_hidden_dim, K
+            lstm_layer = DNC(input_dim, output_dim, 256, 64, 4, hidden_dim, 8
         )
     #...
     

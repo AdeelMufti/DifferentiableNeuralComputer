@@ -75,6 +75,12 @@ class DeepLSTM(Chain):
     def reset_state(self):
         self.l1.reset_state()
 
+    def get_h(self):
+        return self.l1.h
+
+    def get_c(self):
+        return self.l1.c
+
 
 class Linear(Chain):
     def __init__(self, d_out, gpu_for_nn_only=False):
@@ -93,12 +99,7 @@ class Linear(Chain):
 
 
 class DNC(Chain):
-    def __init__(self, X, Y, N, W, R, lstm_hidden_dim, K=8, gpu=-1, gpu_for_nn_only=False):
-        if gpu >= 0 and not gpu_for_nn_only:
-            global xp
-            xp = cp
-            xp.cuda.Device(gpu).use()
-
+    def __init__(self, X, Y, N, W, R, lstm_hidden_dim, K=8, gpu_for_nn_only=False):
         self.X = X  # input dimension
         self.Y = Y  # output dimension
         self.N = N  # number of memory slot
@@ -115,7 +116,6 @@ class DNC(Chain):
             l_dl=self.controller,
             l_Wr=self.linear
         )
-        self.reset_state()
 
     def __call__(self, x):
         self.chi = F.concat((x, self.r))
@@ -197,12 +197,25 @@ class DNC(Chain):
         self.ww = Variable(xp.zeros((self.N, 1)).astype(xp.float32))
 
     def to_gpu(self, device=None):
-        self.controller.to_gpu(device)
-        self.linear.to_gpu(device)
+        global xp
+        xp = cp
+        if device is not None:
+            xp.cuda.Device(device).use()
+        self.l_dl.to_gpu(device)
+        self.l_Wr.to_gpu(device)
 
     def to_cpu(self):
-        self.controller.to_cpu()
-        self.linear.to_cpu()
+        global xp
+        xp = np
+        self.l_dl.to_cpu()
+        self.l_Wr.to_cpu()
+
+    def get_h(self):
+        return self.l_dl.get_h()
+
+    def get_c(self):
+        return self.l_dl.get_c()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Optimized Chainer DNC')
@@ -241,7 +254,7 @@ if __name__ == '__main__':
         model = DeepLSTM(H, Y, True)
         dnc_or_lstm = "lstm"
     else:
-        model = DNC(X, Y, N, W, R, H, K, args.gpu, args.gpu_for_nn_only)
+        model = DNC(X, Y, N, W, R, H, K, args.gpu_for_nn_only)
         dnc_or_lstm = "dnc"
 
     if not os.path.exists("result"):
