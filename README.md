@@ -133,7 +133,7 @@ from lib import DNC
 class MyModel(chainer.Chain):
     def __init__(self, input_dim=35, hidden_dim=256, output_dim=32):
         super(MyModel, self).__init__(
-                             # X, Y, N, W, R, lstm_hidden_dim, K
+                             # X, Y, N, W, R, lstm_hidden_dim, K)
             lstm_layer = DNC(input_dim, output_dim, 256, 64, 4, hidden_dim, 8
         )
     #...
